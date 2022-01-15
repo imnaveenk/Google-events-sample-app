@@ -1,6 +1,7 @@
 {
   "name": "microsoft-calendar",
   "version": "0.1.0",
+  "lockfileVersion": "1",
   "private": true,
   "dependencies": {
     "@fullcalendar/daygrid": "^5.10.1",
@@ -39,5 +40,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "mini-css-extract-plugin": "2.4.5"
   }
 }
