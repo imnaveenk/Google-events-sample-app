@@ -37,11 +37,10 @@ const Home = () => {
 
   // Checks if we have loginToken and Window object
   if (loginToken && loginKey && window && localStorage) {
-    history.replace({ search: null });
     const tokens = JSON.parse(localStorage.getItem("theCodeMeshTokens")) || {};
     tokens[loginKey] = loginToken;
     localStorage.setItem("theCodeMeshTokens", JSON.stringify(tokens));
-    setTheCodeMeshTokens(tokens);
+    history.replace({ search: null });
   }
 
   const fetchListOfEvents = () => {
@@ -86,7 +85,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    if (theCodeMeshTokens) {
+    if (theCodeMeshTokens && !data.length) {
       fetchListOfEvents();
     }
   }, [theCodeMeshTokens]);
