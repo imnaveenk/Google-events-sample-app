@@ -6,6 +6,8 @@ import FullCalendar from "@fullcalendar/react"; // must go before plugins
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { APIS, SCOPES, TRIGGER_URL } from "../constants";
+import ReactLoading from 'react-loading';
+
 
 const updateQueryStringParameter = (uri, key, value) => {
   var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
@@ -32,19 +34,16 @@ const Home = () => {
   const [userLoggedIn, setUserLoggedIn] = useState(0);
   const [theCodeMeshTokens, setTheCodeMeshTokens] = useState(0);
   const [loginUrl, setLoginUrl] = useState("");
-  // const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [eventsData, setEventsData] = useState([]);
 
   const getEvents = () => {
-
     const events = [];
-    console.log(eventsData);
-      eventsData.forEach(dataItem => {
-        dataItem.items.forEach(eventItem => {
-          events.push({ title: eventItem.summary, start: eventItem.start.date ?? eventItem.start.dateTime, end: eventItem.end.date ?? eventItem.end.dateTime });
-        });
+    eventsData.forEach(dataItem => {
+      dataItem.items.forEach(eventItem => {
+        events.push({ title: eventItem.summary, start: eventItem.start.date ?? eventItem.start.dateTime, end: eventItem.end.date ?? eventItem.end.dateTime });
       });
-    console.log(events)
+    });
     return events;
   };
 
@@ -91,10 +90,10 @@ const Home = () => {
   const fetchEvents = items => {
     items.forEach(item => {
       let url = `${TRIGGER_URL}${process.env.REACT_APP_PROJECT_ID}/${APIS.EVENTS_LIST.replace("<calendarId>", encodeURIComponent(item.id))}/?redirect_url=${window.location.origin}`;
+      setLoading(true);
       axios
         .get(url, { headers: theCodeMeshTokens })
         .then(res => {
-          console.log(res.data)
           let localdata = eventsData;
           localdata.push(res.data);
           setEventsData(JSON.parse(JSON.stringify(eventsData)));
@@ -103,32 +102,10 @@ const Home = () => {
           console.log(err.response);
         })
         .finally(last => {
-          console.log("last ", eventsData);
+          setLoading(false);
         });
     });
   };
-
-  // const fetchEvents =  items => {
-  //   let localEventsData = eventsData;
-  //   items.forEach(item => {
-  //     const url = `${TRIGGER_URL}${process.env.REACT_APP_PROJECT_ID}/${APIS.EVENTS_LIST.replace("<calendarId>", encodeURIComponent(item.id))}/?redirect_url=${window.location.origin}`;
-  //     axios
-  //       .get(url, {
-  //         headers: theCodeMeshTokens
-  //       })
-  //       .then( response => {
-  //         localEventsData.push({ calendarId: item.id, data: response.data });
-  //       })
-  //       .catch(error => {
-  //         //handle generic errors
-  //         errorHandling(error);
-  //       }).finally(() => {
-
-  //         console.log("asdasda as ahkjsh akl");
-  //         storeEvents(localEventsData)
-  //       });
-  //   });
-  // };
 
   useEffect(() => {
     // get code mesh token from the local storage
@@ -153,10 +130,6 @@ const Home = () => {
   }, [calendars]);
 
   useEffect(() => {
-    console.log(eventsData)
-  }, [JSON.stringify(eventsData)]);
-
-  useEffect(() => {
     if (theCodeMeshTokens && !calendars) {
       fetchCalendars();
     }
@@ -164,12 +137,13 @@ const Home = () => {
 
   return (
     <React.Fragment>
-      {userLoggedIn === 0 && (
+      {loading ? (
+        <div style={{margin: "0 auto"}}><ReactLoading type={"spin"} color={"blue"} height={"20px"} width={"20px"} /></div>
+      ) : userLoggedIn === 0 ? (
         <div>
           Please login with your Google account, <a href={loginUrl}> Click here </a>
         </div>
-      )}
-      {userLoggedIn === 1 && (
+      ) : (
         <div>
           <FullCalendar weekends={true} plugins={[dayGridPlugin, timeGridPlugin]} initialView="dayGridMonth" events={getEvents()} />
         </div>
